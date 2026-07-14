@@ -21,7 +21,10 @@
   var fieldDescricao = document.getElementById('field-descricao');
   var fieldTecnologias = document.getElementById('field-tecnologias');
   var fieldLink = document.getElementById('field-link');
+  var fieldImagemFile = document.getElementById('field-imagemFile');
   var fieldImagemUrl = document.getElementById('field-imagemUrl');
+  var imagemPreview = document.getElementById('imagem-preview');
+  var imagemPreviewImg = document.getElementById('imagem-preview-img');
   var formError = document.getElementById('form-error');
   var formSubmitBtn = document.getElementById('form-submit-btn');
   var formCancelBtn = document.getElementById('form-cancel-btn');
@@ -31,6 +34,21 @@
   var projectList = document.getElementById('project-list');
   var listEmpty = document.getElementById('list-empty');
   var statusMsg = document.getElementById('status-msg');
+
+  /* ── File preview ── */
+  fieldImagemFile.addEventListener('change', function () {
+    var file = this.files[0];
+    if (!file) {
+      hide(imagemPreview);
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      imagemPreviewImg.src = e.target.result;
+      show(imagemPreview);
+    };
+    reader.readAsDataURL(file);
+  });
 
   /* ── Helpers ── */
   function show(el) { el.style.display = ''; }
@@ -183,7 +201,10 @@
     fieldDescricao.value = '';
     fieldTecnologias.value = '';
     fieldLink.value = '';
+    fieldImagemFile.value = '';
     fieldImagemUrl.value = '';
+    hide(imagemPreview);
+    imagemPreviewImg.src = '';
     hide(formError);
   }
 
@@ -201,7 +222,15 @@
     fieldDescricao.value = p.descricao || '';
     fieldTecnologias.value = p.tecnologias || '';
     fieldLink.value = p.link || '';
+    fieldImagemFile.value = '';
     fieldImagemUrl.value = p.imagemUrl || '';
+    if (p.imagemUrl) {
+      imagemPreviewImg.src = p.imagemUrl;
+      show(imagemPreview);
+    } else {
+      hide(imagemPreview);
+      imagemPreviewImg.src = '';
+    }
     formTitle.textContent = 'Editar Projeto';
     formSubmitBtn.textContent = 'Salvar altera\u00E7\u00F5es';
     hide(formError);
@@ -217,6 +246,81 @@
   newProjectBtn.addEventListener('click', openNew);
   formCancelBtn.addEventListener('click', closeForm);
 
+  function uploadFile(file) {
+    var formData = new FormData();
+    formData.append('file', file);
+    return fetch('/api/projetos/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    }).then(function (res) {
+      if (!res.ok) throw new Error('Upload failed');
+      return res.json();
+    }).then(function (data) {
+      return data.imagemUrl;
+    });
+  }
+
+  function handleSave() {
+    hide(formError);
+
+    var file = fieldImagemFile.files[0];
+    var imagemUrl = fieldImagemUrl.value;
+
+    function doSave(url) {
+      var data = {
+        titulo: fieldTitulo.value.trim(),
+        descricao: fieldDescricao.value.trim(),
+        tecnologias: fieldTecnologias.value.trim(),
+        link: fieldLink.value.trim(),
+        imagemUrl: url
+      };
+
+      var path;
+      var method;
+      if (editingId !== null) {
+        path = '/projetos/' + editingId;
+        method = 'PUT';
+      } else {
+        path = '/projetos';
+        method = 'POST';
+      }
+
+      return api(path, {
+        method: method,
+        headers: authHeaders(),
+        body: JSON.stringify(data)
+      });
+    }
+
+    formSubmitBtn.disabled = true;
+    formSubmitBtn.textContent = 'Salvando…';
+
+    var promise;
+    if (file) {
+      promise = uploadFile(file).then(function (url) {
+        return doSave(url);
+      });
+    } else {
+      promise = doSave(imagemUrl);
+    }
+
+    promise
+      .then(function () {
+        flash(editingId !== null ? 'Projeto atualizado.' : 'Projeto criado.');
+        closeForm();
+        loadProjects();
+      })
+      .catch(function () {
+        formError.textContent = 'Erro ao salvar. Verifique os dados e tente novamente.';
+        show(formError);
+      })
+      .finally(function () {
+        formSubmitBtn.disabled = false;
+        formSubmitBtn.textContent = editingId !== null ? 'Salvar altera\u00E7\u00F5es' : 'Criar projeto';
+      });
+  }
+
   projectForm.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!fieldTitulo.value.trim()) {
@@ -224,46 +328,7 @@
       show(formError);
       return;
     }
-    hide(formError);
-    formSubmitBtn.disabled = true;
-    formSubmitBtn.textContent = 'Salvando…';
-
-    var data = {
-      titulo: fieldTitulo.value.trim(),
-      descricao: fieldDescricao.value.trim(),
-      tecnologias: fieldTecnologias.value.trim(),
-      link: fieldLink.value.trim(),
-      imagemUrl: fieldImagemUrl.value.trim()
-    };
-
-    var url;
-    var method;
-    if (editingId !== null) {
-      url = '/projetos/' + editingId;
-      method = 'PUT';
-    } else {
-      url = '/projetos';
-      method = 'POST';
-    }
-
-    api(url, {
-      method: method,
-      headers: authHeaders(),
-      body: JSON.stringify(data)
-    })
-    .then(function () {
-      flash(editingId !== null ? 'Projeto atualizado.' : 'Projeto criado.');
-      closeForm();
-      loadProjects();
-    })
-    .catch(function () {
-      formError.textContent = 'Erro ao salvar. Verifique os dados e tente novamente.';
-      show(formError);
-    })
-    .finally(function () {
-      formSubmitBtn.disabled = false;
-      formSubmitBtn.textContent = editingId !== null ? 'Salvar altera\u00E7\u00F5es' : 'Criar projeto';
-    });
+    handleSave();
   });
 
   /* ── Delete ── */

@@ -1,4 +1,6 @@
 (function () {
+  var DESCRIPTION_MAX_LENGTH = 120;
+
   var container = document.getElementById('projects-container');
   var grid = document.getElementById('projects-grid');
   var statusEl = document.getElementById('projects-status');
@@ -32,10 +34,38 @@
     body.appendChild(title);
 
     if (projeto.descricao) {
+      var descWrapper = document.createElement('div');
+      descWrapper.className = 'project-card__desc-wrapper';
+
       var desc = document.createElement('p');
       desc.className = 'project-card__desc';
-      desc.textContent = projeto.descricao;
-      body.appendChild(desc);
+
+      if (projeto.descricao.length > DESCRIPTION_MAX_LENGTH) {
+        desc.textContent = projeto.descricao.substring(0, DESCRIPTION_MAX_LENGTH) + '\u2026';
+        desc.classList.add('project-card__desc-truncated');
+        descWrapper.appendChild(desc);
+
+        var verMais = document.createElement('button');
+        verMais.className = 'project-card__ver-mais';
+        verMais.textContent = 'Ver mais';
+        verMais.addEventListener('click', function () {
+          if (desc.classList.contains('project-card__desc-truncated')) {
+            desc.textContent = projeto.descricao;
+            desc.classList.remove('project-card__desc-truncated');
+            verMais.textContent = 'Ver menos';
+          } else {
+            desc.textContent = projeto.descricao.substring(0, DESCRIPTION_MAX_LENGTH) + '\u2026';
+            desc.classList.add('project-card__desc-truncated');
+            verMais.textContent = 'Ver mais';
+          }
+        });
+        descWrapper.appendChild(verMais);
+      } else {
+        desc.textContent = projeto.descricao;
+        descWrapper.appendChild(desc);
+      }
+
+      body.appendChild(descWrapper);
     }
 
     if (projeto.tecnologias) {

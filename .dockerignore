@@ -1,0 +1,11 @@
+target/
+.git/
+.gitignore
+README.md
+.env
+AGENTS.md
+.mvn/wrapper/
+mvnw
+mvnw.cmd
+.idea/
+*.md
