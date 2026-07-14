@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Tiago Ursich</title>
+  <link rel="stylesheet" href="/css/globals.css" />
+</head>
+<body>
+
+  <!-- Login screen (hidden by default, shown by JS) -->
+  <div id="login-screen" class="login-wrap" style="display:none">
+    <div class="login-card">
+      <h1 class="login-card__title">Admin</h1>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="pwd">Senha</label>
+          <input id="pwd" type="password" class="form-input" autofocus autocomplete="current-password" />
+          <p id="login-error" class="form-error" style="display:none"></p>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin dashboard (hidden by default) -->
+  <div id="admin-dashboard" style="display:none">
+
+    <header class="admin-header">
+      <div class="container">
+        <div class="admin-header__inner">
+          <span class="admin-header__title">Admin</span>
+          <button class="btn btn-secondary btn-sm" id="logout-btn">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-body">
+      <div class="container">
+
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">Projetos</h2>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="status-msg" class="admin-status" style="display:none"></span>
+            <button class="btn btn-primary btn-sm" id="new-project-btn">+ Novo Projeto</button>
+          </div>
+        </div>
+
+        <!-- Form panel -->
+        <div id="form-panel" class="form-panel" style="display:none">
+          <p class="form-panel__title" id="form-title">Novo Projeto</p>
+          <form id="project-form">
+            <div class="form-group">
+              <label class="form-label">Título *</label>
+              <input type="text" class="form-input" id="field-titulo" autofocus />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descrição</label>
+              <textarea class="form-textarea" id="field-descricao"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tecnologias</label>
+              <input type="text" class="form-input" id="field-tecnologias" placeholder="Java, Spring Boot, PostgreSQL" />
+              <p class="form-hint">Separe com vírgulas.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Link</label>
+              <input type="url" class="form-input" id="field-link" placeholder="https://github.com/..." />
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL da Imagem</label>
+              <input type="url" class="form-input" id="field-imagemUrl" placeholder="https://..." />
+            </div>
+            <p id="form-error" class="form-error" style="display:none;margin-bottom:12px"></p>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="form-submit-btn">Criar projeto</button>
+              <button type="button" class="btn btn-secondary" id="form-cancel-btn">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Project list -->
+        <div id="project-list-container">
+          <p id="list-status" style="font-size:15px;color:var(--text-tertiary)">Carregando…</p>
+        </div>
+        <div id="project-list" class="project-list" style="display:none"></div>
+        <div id="list-empty" class="list-empty" style="display:none">Nenhum projeto cadastrado.</div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
